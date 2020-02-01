@@ -178,7 +178,6 @@ var NbTabs = {
   }
 };
 
-
 //
 //NbEasyDom
 (function() {
@@ -190,295 +189,7 @@ var NbTabs = {
   "use strict";
   var NbEasyDom = window.NbEasyDom || {};
   window.NbEasyDom = NbEasyDom;
-  var NbEasyDomMethods = window.NbEasyDomMethods || {};
-  window.NbEasyDomMethods = NbEasyDomMethods;
 
-  NbEasyDomMethods = (function() {
-    var NbEasyDom = function(elems) {
-      var T = this;
-      T.length = elems.length;
-      T.eventsList = [];
-      for (var i = 0; i < T.length; i++) {
-        T[i] = elems[i];
-      }
-      return T;
-    };
-
-    ///////////////////////////
-    //////////////////////ELEMS
-    NbEasyDom.prototype.find = function(selector) {
-      var T = this;
-      if (typeof selector === "string") {
-        var stack = T.pushStack();
-        T.each(function(item, key) {
-          T.findSelf(selector, item, stack);
-        });
-        return stack;
-      }
-      return T;
-    };
-    NbEasyDom.prototype.findSelf = function(selector, elem, stack) {
-      var findes = elem.querySelectorAll(selector);
-      stack.pushStack(findes);
-    };
-    NbEasyDom.prototype.parent = function(selector) {
-      var T = this;
-      var elem = T[0];
-      var stack = T.pushStack();
-      if (selector) {
-        var findes = elem.closest(selector);
-        stack.pushStack(findes);
-        return stack;
-      }
-      var findes = elem.parentElement;
-      stack.pushStack(findes);
-      return stack;
-    };
-    NbEasyDom.prototype.first = function() {
-      var T = this;
-      var elem = T[0];
-      var findes = elem;
-      var stack = T.pushStack();
-      stack.pushStack(findes);
-      return stack;
-    };
-    NbEasyDom.prototype.last = function() {
-      var T = this;
-      var elem = T[T.length - 1];
-      var findes = elem;
-      var stack = T.pushStack();
-      stack.pushStack(findes);
-      return stack;
-    };
-    NbEasyDom.prototype.eq = function(id) {
-      var T = this;
-      var elem = T[id];
-      var findes = elem;
-      var stack = T.pushStack();
-      stack.pushStack(findes);
-      return stack;
-    };
-    NbEasyDom.prototype.pushStack = function(findes) {
-      var T = this;
-      if (!findes) return $n();
-      if (findes.length > 0)
-        for (var i = 0; i < findes.length; i++) {
-          T[T.length] = findes[i];
-          T.length++;
-        }
-      else {
-        T[0] = findes;
-        T.length = 1;
-      }
-      return T;
-    };
-    NbEasyDom.prototype.each = function(handler) {
-      var T = this;
-      for (var i = 0; i < T.length; i++) {
-        handler(T[i], i);
-      }
-      return T;
-    };
-    NbEasyDom.prototype.append = function(elem) {
-      var T = this;
-      elems.appendChild(elem);
-      return T;
-    };
-
-    ///////////////////////////
-    /////////////////////EVENTS
-    NbEasyDom.prototype.on = function(event, handler) {
-      var T = this;
-      if (T.length >= 1) {
-        var handlerElem = function(e) {
-          /* var data = e.detail.data; */
-          handler(e /* , data.a, data.b, data.c, data.d */);
-        };
-        T.each(function(elem) {
-          elem.addEventListener(event, handlerElem);
-        });
-
-        T.eventsList.push({ name: event, handler: handlerElem });
-        return true;
-      }
-    };
-    NbEasyDom.prototype.off = function(event, handler) {
-      var T = this;
-      T.each(function(elem) {
-        elem.removeEventListener(event, handler);
-      });
-    };
-    NbEasyDom.prototype.trigger = function(name, a, b, c, d) {
-      var T = this;
-      var data = {
-        a: a == "self" ? T : a,
-        b: b,
-        c: c,
-        d: d
-      };
-      var event;
-      if (typeof Event === "function") {
-        event = new Event(name);
-      } else {
-        event = document.createEvent("Event");
-        event.initEvent(name, true, true);
-      }
-      document.dispatchEvent(event);
-    };
-
-    ///////////////////////////
-    /////////////////ATTRIBUTES
-    NbEasyDom.prototype.attr = function(name, value) {
-      var T = this;
-      if (!value) {
-        if (T.length == 0) return undefined;
-        if (T[T.length - 1].hasAttribute(name))
-          return T[T.length - 1].getAttribute(name);
-        else {
-          return null;
-        }
-      }
-      T.each(function(elem) {
-        elem.setAttribute(name, value);
-      });
-      return T;
-    };
-    NbEasyDom.prototype.data = function(name, value) {
-      var T = this;
-      if (!value) {
-        if (T.length == 0) return undefined;
-        if (T[T.length - 1].hasAttribute("data-" + name))
-          return T[T.length - 1].getAttribute("data-" + name);
-        else {
-          return null;
-        }
-      }
-      T.each(function(elem) {
-        elem.setAttribute("data-" + name, value);
-      });
-      return T;
-    };
-    NbEasyDom.prototype.css = function(name, value) {
-      var T = this;
-      var styles = T[0].style;
-      if (!value) {
-        styles = document.defaultView.getComputedStyle(T[0], null).cssText;
-        styles = styles.slice(styles.indexOf(name));
-        styles = styles.substr(0, styles.indexOf(";"));
-        return styles.slice(styles.indexOf(": ") + 2);
-      }
-      styles.setProperty(name, value);
-      return T;
-    };
-    NbEasyDom.prototype.addClass = function(name) {
-      var T = this;
-      T.each(function(elem) {
-        elem.classList.add(name);
-      });
-      return T;
-    };
-    NbEasyDom.prototype.removeClass = function(name) {
-      var T = this;
-      T.each(function(elem) {
-        elem.classList.remove(name);
-      });
-      return T;
-    };
-    NbEasyDom.prototype.toggleClass = function(name) {
-      var T = this;
-      T.each(function(elem) {
-        elem.classList.contains(name)
-          ? elem.classList.remove(name)
-          : elem.classList.add(name);
-      });
-      return T;
-    };
-    NbEasyDom.prototype.hasClass = function(name) {
-      var T = this;
-      if (T.length == 0) return undefined;
-      return T[0].classList.contains(name);
-    };
-
-    ///////////////////////////
-    ////////////////////CONTENT
-    NbEasyDom.prototype.html = function(content) {
-      var T = this;
-      if (!content) {
-        return T[0].innerHTML;
-      }
-      T.each(function(elem) {
-        elem.innerHTML = content;
-      });
-
-      return T;
-    };
-    NbEasyDom.prototype.htmlOut = function(content) {
-      var T = this;
-      if (!content) {
-        return T[0].outerHTML;
-      }
-      T.each(function(elem) {
-        elem.outerHTML = content;
-      });
-
-      return T;
-    };
-    NbEasyDom.prototype.text = function(content) {
-      var T = this;
-      if (!content) {
-        return T[0].textContent;
-      }
-
-      T.each(function(elem) {
-        elem.innerTEXT = content;
-      });
-
-      return T;
-    };
-    NbEasyDom.prototype.textOut = function(content) {
-      var T = this;
-      if (!content) {
-        return T[0].outerText;
-      }
-
-      T.each(function(elem) {
-        elem.outerText = content;
-      });
-
-      return T;
-    };
-
-    ///////////////////////////
-    ////////////////////OPTIONS
-    NbEasyDom.prototype.setFlops = function(className) {
-      var T = this;
-      var selector = "." + className;
-      T.on("click", function(e) {
-        var clicked = false;
-        var target = $n(e.target);
-        var width_;
-        if (target.hasClass(className) || target.parent(selector).length > 0) {
-          clicked = true;
-          target = target.hasClass(className)
-            ? target
-            : target.parent(selector);
-          width_ =
-            !target.data("width") ||
-            window.innerWidth <= Number(target.data("width"));
-        }
-        if (clicked && width_) {
-          target.toggleClass("active");
-          if (target.hasClass("active")) {
-            T.trigger("flopClose", target);
-          } else {
-            T.trigger("flopOpen", target);
-          }
-        }
-      });
-      return T;
-    };
-    return NbEasyDom;
-  })();
   NbEasyDom = function(selector) {
     var elems = {};
     if (typeof selector === "string") {
@@ -490,9 +201,290 @@ var NbTabs = {
       elems = {};
       elems.length = 0;
     }
-    return new NbEasyDomMethods(elems);
+
+    var T = this;
+    T.length = elems.length;
+    T.eventsList = [];
+    for (var i = 0; i < T.length; i++) {
+      T[i] = elems[i];
+    }
+    return T;
   };
-  window.$n = NbEasyDom;
+  NbEasyDom.fn = NbEasyDom.prototype;
+  ///////////////////////////
+  //////////////////////ELEMS
+  NbEasyDom.fn.find = function(selector) {
+    var T = this;
+    if (typeof selector === "string") {
+      var stack = T.pushStack();
+      T.each(function(item, key) {
+        T.findSelf(selector, item, stack);
+      });
+      return stack;
+    }
+    return T;
+  };
+  NbEasyDom.fn.findSelf = function(selector, elem, stack) {
+    var findes = elem.querySelectorAll(selector);
+    stack.pushStack(findes);
+  };
+  NbEasyDom.fn.parent = function(selector) {
+    var T = this;
+    var elem = T[0];
+    var stack = T.pushStack();
+    if (selector) {
+      var findes = elem.closest(selector);
+      stack.pushStack(findes);
+      return stack;
+    }
+    var findes = elem.parentElement;
+    stack.pushStack(findes);
+    return stack;
+  };
+  NbEasyDom.fn.first = function() {
+    var T = this;
+    var elem = T[0];
+    var findes = elem;
+    var stack = T.pushStack();
+    stack.pushStack(findes);
+    return stack;
+  };
+  NbEasyDom.fn.last = function() {
+    var T = this;
+    var elem = T[T.length - 1];
+    var findes = elem;
+    var stack = T.pushStack();
+    stack.pushStack(findes);
+    return stack;
+  };
+  NbEasyDom.fn.eq = function(id) {
+    var T = this;
+    var elem = T[id];
+    var findes = elem;
+    var stack = T.pushStack();
+    stack.pushStack(findes);
+    return stack;
+  };
+  NbEasyDom.fn.pushStack = function(findes) {
+    var T = this;
+    if (!findes) return $n();
+    if (findes.length > 0)
+      for (var i = 0; i < findes.length; i++) {
+        T[T.length] = findes[i];
+        T.length++;
+      }
+    else {
+      T[0] = findes;
+      T.length = 1;
+    }
+    return T;
+  };
+  NbEasyDom.fn.each = function(handler) {
+    var T = this;
+    for (var i = 0; i < T.length; i++) {
+      handler(T[i], i);
+    }
+    return T;
+  };
+  NbEasyDom.fn.append = function(elem) {
+    var T = this;
+    elems.appendChild(elem);
+    return T;
+  };
+
+  ///////////////////////////
+  /////////////////////EVENTS
+  NbEasyDom.fn.on = function(event, handler) {
+    var T = this;
+    if (T.length >= 1) {
+      var handlerElem = function(e) {
+        /* var data = e.detail.data; */
+        handler(e /* , data.a, data.b, data.c, data.d */);
+      };
+      T.each(function(elem) {
+        elem.addEventListener(event, handlerElem);
+      });
+
+      T.eventsList.push({ name: event, handler: handlerElem });
+      return true;
+    }
+  };
+  NbEasyDom.fn.off = function(event, handler) {
+    var T = this;
+    T.each(function(elem) {
+      elem.removeEventListener(event, handler);
+    });
+  };
+  NbEasyDom.fn.trigger = function(name, a, b, c, d) {
+    var T = this;
+    var data = {
+      a: a == "self" ? T : a,
+      b: b,
+      c: c,
+      d: d
+    };
+    var event;
+    if (typeof Event === "function") {
+      event = new Event(name);
+    } else {
+      event = document.createEvent("Event");
+      event.initEvent(name, true, true);
+    }
+    document.dispatchEvent(event);
+  };
+
+  ///////////////////////////
+  /////////////////ATTRIBUTES
+  NbEasyDom.fn.attr = function(name, value) {
+    var T = this;
+    if (!value) {
+      if (T.length == 0) return undefined;
+      if (T[T.length - 1].hasAttribute(name))
+        return T[T.length - 1].getAttribute(name);
+      else {
+        return null;
+      }
+    }
+    T.each(function(elem) {
+      elem.setAttribute(name, value);
+    });
+    return T;
+  };
+  NbEasyDom.fn.data = function(name, value) {
+    var T = this;
+    if (!value) {
+      if (T.length == 0) return undefined;
+      if (T[T.length - 1].hasAttribute("data-" + name))
+        return T[T.length - 1].getAttribute("data-" + name);
+      else {
+        return null;
+      }
+    }
+    T.each(function(elem) {
+      elem.setAttribute("data-" + name, value);
+    });
+    return T;
+  };
+  NbEasyDom.fn.css = function(name, value) {
+    var T = this;
+    var styles = T[0].style;
+    if (!value) {
+      styles = document.defaultView.getComputedStyle(T[0], null).cssText;
+      styles = styles.slice(styles.indexOf(name));
+      styles = styles.substr(0, styles.indexOf(";"));
+      return styles.slice(styles.indexOf(": ") + 2);
+    }
+    styles.setProperty(name, value);
+    return T;
+  };
+  NbEasyDom.fn.addClass = function(name) {
+    var T = this;
+    T.each(function(elem) {
+      elem.classList.add(name);
+    });
+    return T;
+  };
+  NbEasyDom.fn.removeClass = function(name) {
+    var T = this;
+    T.each(function(elem) {
+      elem.classList.remove(name);
+    });
+    return T;
+  };
+  NbEasyDom.fn.toggleClass = function(name) {
+    var T = this;
+    T.each(function(elem) {
+      elem.classList.contains(name)
+        ? elem.classList.remove(name)
+        : elem.classList.add(name);
+    });
+    return T;
+  };
+  NbEasyDom.fn.hasClass = function(name) {
+    var T = this;
+    if (T.length == 0) return undefined;
+    return T[0].classList.contains(name);
+  };
+
+  ///////////////////////////
+  ////////////////////CONTENT
+  NbEasyDom.fn.html = function(content) {
+    var T = this;
+    if (!content) {
+      return T[0].innerHTML;
+    }
+    T.each(function(elem) {
+      elem.innerHTML = content;
+    });
+
+    return T;
+  };
+  NbEasyDom.fn.htmlOut = function(content) {
+    var T = this;
+    if (!content) {
+      return T[0].outerHTML;
+    }
+    T.each(function(elem) {
+      elem.outerHTML = content;
+    });
+
+    return T;
+  };
+  NbEasyDom.fn.text = function(content) {
+    var T = this;
+    if (!content) {
+      return T[0].textContent;
+    }
+
+    T.each(function(elem) {
+      elem.innerTEXT = content;
+    });
+
+    return T;
+  };
+  NbEasyDom.fn.textOut = function(content) {
+    var T = this;
+    if (!content) {
+      return T[0].outerText;
+    }
+
+    T.each(function(elem) {
+      elem.outerText = content;
+    });
+
+    return T;
+  };
+
+  ///////////////////////////
+  ////////////////////OPTIONS
+  NbEasyDom.fn.setFlops = function(className) {
+    var T = this;
+    var selector = "." + className;
+    T.on("click", function(e) {
+      var clicked = false;
+      var target = $n(e.target);
+      var width_;
+      if (target.hasClass(className) || target.parent(selector).length > 0) {
+        clicked = true;
+        target = target.hasClass(className) ? target : target.parent(selector);
+        width_ =
+          !target.data("width") ||
+          window.innerWidth <= Number(target.data("width"));
+      }
+      if (clicked && width_) {
+        target.toggleClass("active");
+        if (target.hasClass("active")) {
+          T.trigger("flopClose", target);
+        } else {
+          T.trigger("flopOpen", target);
+        }
+      }
+    });
+    return T;
+  };
+
+  console.log(NbEasyDom)
+  window.$n = new NbEasyDom;
 })();
 //
 //ModalsWindows
@@ -994,4 +986,5 @@ var NbTabs = {
   $n(document).setFlops("nbf-item");
   NbWhellEvent._init();
   NbTabs._init();
+  console.log($n);
 })(document);
